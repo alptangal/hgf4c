@@ -9,3 +9,4 @@ asyncio
 fastapi==0.112.2
 yt_dlp
 cryptography
+streamlit
