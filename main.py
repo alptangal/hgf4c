@@ -7,6 +7,7 @@ import hf
 from dotenv import load_dotenv
 import aiohttp,requests
 import traceback
+import server
 load_dotenv()
 
 FOLDER_TOKEN=os.getenv('folder_token').strip().replace("\n",'')
@@ -19,7 +20,7 @@ if not os.path.exists(folder_path):
     print(f"Folder '{folder_path}' created.")
 else:
     print(f"Folder '{folder_path}' already exists.")
-async def main():
+async def my_process():
     try:
         while True:
             lark=basic.LarkClass(APP_ID,APP_SECRET)
@@ -188,4 +189,15 @@ async def main():
         traceback.print_exc()
         pass
 
+async def main():
+    try:
+        req=requests.get('http://localhost:8888')
+        sys.exit("Exited")
+    except Exception as error:
+        server.b() 
+        try:
+            await my_process()
+        except Exception as err:
+            traceback.print_exc()
+            pass
 asyncio.run(main())
