@@ -40,6 +40,7 @@ async def main():
                 page_token=None
                 accounts_table_id=None
                 spaces_table_id=None
+                packages_table_id=None
                 while True:
                     result=await lark.get_tables(app_token=base_token)
                     if result:
@@ -48,6 +49,8 @@ async def main():
                                 accounts_table_id=table['table_id']
                             elif 'spaces' ==table['name']:
                                 spaces_table_id=table['table_id']
+                            elif 'packages' ==table['name']:
+                                packages_table_id=table['table_id']
                     if 'has_more' in result and result['has_more']:
                         page_token=result['next_page_token']
                     else:
@@ -96,7 +99,7 @@ async def main():
                                             'value':[record_id]
                                         },
                                         {
-                                            'field_name':'FILES',
+                                            'field_name':'PACKAGE',
                                             'operator':'isNotEmpty',
                                             'value':[]
                                         }
@@ -108,7 +111,9 @@ async def main():
                                             for space in result1['items']:
                                                 space_record_id=space['record_id']
                                                 space_name=space['fields']['NAME'][0]['text']
-                                                space_files=space['fields']['FILES']
+                                                package_record_id=space['fields']['PACKAGE']['link_record_ids'][0]
+                                                package_info=await lark.get_record(app_token=base_token,table_id=packages_table_id,record_id=package_record_id)
+                                                space_files=package_info['record']['fields']['FILES']
                                                 files_path=[]
                                                 for file in space_files:
                                                     rs=await lark.download_file(file['url'],file_name=f"downloads/{file['name']}")

@@ -93,7 +93,6 @@ async def commit_file(header,git_path,files_path):
 
     async with aiohttp.ClientSession() as session:
         async with session.post(url,headers=header,json=data) as response:
-            print(await response.text())
             if response.status<400:
                 js=await response.json()
                 commitOid=js['commitOid']
@@ -139,9 +138,7 @@ async def create_new_file(header,git_path,file_name,content):
                             }
                         ]
                     }
-                print(data)
                 async with session.post(url,headers=header,json=data) as response:
-                    print(await response.text())
                     if response.status<400:
                         js=await response.json()
                         print(f"{file_name} created success")
