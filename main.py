@@ -10,7 +10,7 @@ import aiohttp,requests
 import traceback
 import server
 import string
-import user_agent
+import headers_db
 load_dotenv()
 
 FOLDER_TOKEN=os.getenv('folder_token').strip().replace("\n",'')
@@ -92,12 +92,12 @@ async def my_process():
                                     token=await hf.login(email=email,password=password)
                                     await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'TOKEN':token})
                                 header={
-                                    'user-agent':choice(user_agent.data),
+                                    'user-agent':choice(headers_db.user_agents),
                                     'cookie':'token='+token,
-                                    'Accept-Language': 'en-US,en;q=0.5',
-                                    'Accept-Encoding': 'gzip, deflate, br',
+                                    'Accept-Language': choice(headers_db.accept_languages),
+                                    'Accept-Encoding': choice(headers_db.encodings),
                                     'Connection': 'keep-alive',
-                                    'Referer': 'https://www.google.com',
+                                    'Referer':choice(headers_db.referers),
                                     'X-Forwarded-For': f"{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}"
                                 }
                                 req=requests.get('https://huggingface.co/new-space',headers=header,allow_redirects=False)
