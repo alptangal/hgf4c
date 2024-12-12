@@ -177,7 +177,8 @@ async def random_action(header):
                 content=await response.text()
                 soup=BS4(content,'html.parser')
                 links=soup.find_all('a')
-                for i in randrange(1,len(links)):
+                print(len(links))
+                for i in range(len(links)):
                     item=randrange(links)
                     url=f"https://huggingface.co{item.get('href')}"
                     rs=await fke_access_page(header=header,url=url)
