@@ -11,11 +11,16 @@ import traceback
 import server
 import string
 import headers_db
+import encrypt
+import base64
+import shutil
 load_dotenv()
 
 FOLDER_TOKEN=os.getenv('folder_token').strip().replace("\n",'')
 APP_ID=os.getenv('app_id').strip().replace("\n",'')
 APP_SECRET=os.getenv('app_secret').strip().replace("\n",'')
+SECRET_KEY=base64.b64decode(os.getenv('secret_key').strip())
+IV=base64.b64decode(os.getenv('iv').strip())
 
 folder_path = "downloads"
 if not os.path.exists(folder_path):
@@ -35,19 +40,51 @@ async def my_process():
         while True:
             lark=basic.LarkClass(APP_ID,APP_SECRET)
             base_token=None
+            lark_db_token=None
             page_token=None
             while True:
                 result=await lark.get_list_files(folder_token=FOLDER_TOKEN,page_token=page_token)
                 if result:
-                    if 'huggingfaces_db' in str(result['files']):
-                        for file in result['files']:
-                            if 'huggingfaces_db' == file['name']:
-                                base_token=file['token']
+                    for file in result['files']:
+                        if 'huggingfaces_db' == file['name'].lower():
+                            base_token=file['token']
+                        elif 'lark_db' == file['name'].lower():
+                            lark_db_token=file['token']
                 if 'has_more' in result and result['has_more']:
                     page_token=result['next_page_token']
                 else:
                     break
-            if base_token:
+            if base_token and lark_db_token:
+                page_token=None
+                apps_table_id=None
+                while True:
+                    result=await lark.get_tables(app_token=lark_db_token)
+                    if result:
+                        for table in result:
+                            if 'apps'==table['name']:
+                                apps_table_id=table['table_id']
+                    if 'has_more' in result and result['has_more']:
+                        page_token=result['next_page_token']
+                    else:
+                        break
+                lark_apps=[]
+                if apps_table_id:
+                    page_token=None
+                    conditions_array=[
+                        {
+                            'field_name':'TYPE',
+                            'operator':'doesNotContain',
+                            'value':['do_not_use']
+                        },
+                    ]
+                    while True:
+                        result=await lark.search_record(app_token=lark_db_token,table_id=apps_table_id,page_token=page_token,conditions_array=conditions_array)
+                        if result and 'items' in result:
+                            lark_apps+=result['items']
+                        if 'has_more' in result and result['has_more']:
+                            page_token=result['next_page_token']
+                        else:
+                            break
                 page_token=None
                 accounts_table_id=None
                 spaces_table_id=None
@@ -91,7 +128,7 @@ async def my_process():
                                 if not header:
                                     header=await hf.login(email=email,password=password)
                                     await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'TOKEN':json.dumps(header)})
-                                await hf.random_action(header=header)
+                                #await hf.random_action(header=header)
                                 req=requests.get('https://huggingface.co/new-space',headers=header,allow_redirects=False)
                                 if req.status_code==200:
                                     await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'STATUS':'alive'})
@@ -129,14 +166,33 @@ async def my_process():
                                                     rs=await lark.download_file(file['url'],file_name=f"downloads/{file['name']}")
                                                     if rs:
                                                         files_path.append(f"downloads/{file['name']}")
+                                                if not os.path.exists('downloads/bin'):
+                                                    ext=generate_random_string(randrange(3,10))
+                                                    with open('downloads/bin', 'w') as file:
+                                                        file.write(ext)
+                                                else:
+                                                    with open('downloads/bin', 'r') as file:
+                                                        ext = file.read()
+                                                files_arr=[]
+                                                for file in files_path:
+                                                    file_name,old_ext_file=os.path.splitext(file)
+                                                    if old_ext_file!='' and old_ext_file=='.py' and 'encrypt' not in file:
+                                                        rs=encrypt.do_encrypt(file,file.replace(old_ext_file,f".{ext}"),SECRET_KEY,IV)
+                                                        if rs:
+                                                            files_arr.append(file.replace(old_ext_file,f".{ext}"))
+                                                    else:
+                                                        files_arr.append(file)
+                                                files_path=files_arr
+                                                files_path.append('downloads/bin')
+                                                random_app=choice(lark_apps)
                                                 secrets=[
                                                     {
                                                         'key':'app_id',
-                                                        'value':'cli_a7b8ab263e78d02f'
+                                                        'value':random_app['fields']['APP_ID'][0]['text']
                                                     },
                                                     {
                                                         'key':'app_secret',
-                                                        'value':'a1lm2lLyCnF230lEuuisTfD6u5kY0xY1'
+                                                        'value':random_app['fields']['APP_SECRET'][0]['text']
                                                     },
                                                     {
                                                         'key':'base_token',
@@ -144,15 +200,15 @@ async def my_process():
                                                     },
                                                     {
                                                         'key':'secret_key',
-                                                        'value':'uq32lXwH4NQdYNlVjNbr1u1izkSosPc90moet7HyoiE='
+                                                        'value':os.getenv('secret_key').strip()
                                                     },
                                                     {
                                                         'key':'iv',
-                                                        'value':'EPvZwpHV+NJLspDM5t1+iQ=='
+                                                        'value':os.getenv('iv').strip()
                                                     }
                                                 ]
                                                 rs=await hf.create_new_space(header=header,name=space_name,secrets=secrets)
-                                                await hf.random_action(header=header)
+                                                #await hf.random_action(header=header)
                                                 if rs:
                                                     git_path=rs['name']
                                                     await lark.update_record(app_token=base_token,table_id=spaces_table_id,record_id=space_record_id,value_fields={'NAME':space_name,'GIT_PATH':git_path,'STATUS':'completed','URL':f"https://{git_path.replace('/','-')}.hf.space"})
@@ -165,7 +221,12 @@ async def my_process():
                                                     """
                                                     await hf.create_new_file(header=header,git_path=git_path,file_name='entrypoint.sh',content=file_content)
                                                     await hf.commit_file(header=header,git_path=git_path,files_path=files_path)
-                                                    
+                                                    folder_path='downloads'
+                                                    if os.path.exists(folder_path) and os.path.isdir(folder_path):
+                                                        shutil.rmtree(folder_path)
+                                                        print(f"Thư mục '{folder_path}' đã được xóa.")
+                                                    else:
+                                                        print(f"Thư mục '{folder_path}' không tồn tại.")
                                         if 'has_more' in result1 and result1['has_more']:
                                             page_token=result1['page_token']
                                         else:
@@ -190,7 +251,7 @@ async def my_process():
                                             page_token=result1['page_token']
                                         else:
                                             break
-                        if 'has_more' in result and result['has_more']:
+                        if result and 'has_more' in result and result['has_more']:
                             page_token=result['page_token']
                         else:
                             break
