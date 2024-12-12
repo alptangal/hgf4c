@@ -185,7 +185,7 @@ async def my_process():
                                         result1=await lark.search_record(app_token=base_token,table_id=spaces_table_id,conditions_array=conditions_array1,page_token=page_token1)
                                         if result1 and 'items' in result1:
                                             for item in result1['items']:
-                                                await lark.delete_record(app_token=base_token,table_id=spaces_table_id,record_id=item['record_id'])
+                                                await lark.update_record(app_token=base_token,table_id=spaces_table_id,record_id=item['record_id'],value_fields={'STATUS':'dead'})
                                         if 'has_more' in result1 and result1['has_more']:
                                             page_token=result1['page_token']
                                         else:
