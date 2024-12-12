@@ -1,6 +1,6 @@
 import sys,os,time
 from datetime import datetime
-from random import randrange
+from random import randrange,choice
 import asyncio
 import lark as basic
 import hf
@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import aiohttp,requests
 import traceback
 import server
+import string
 load_dotenv()
 
 FOLDER_TOKEN=os.getenv('folder_token').strip().replace("\n",'')
@@ -20,6 +21,13 @@ if not os.path.exists(folder_path):
     print(f"Folder '{folder_path}' created.")
 else:
     print(f"Folder '{folder_path}' already exists.")
+def generate_random_string(length):
+    if length <= 0:
+        raise ValueError("Length must be a positive integer.")
+
+    characters = string.ascii_letters + string.digits
+    return ''.join(choice(characters) for _ in range(length))
+
 async def my_process():
     try:
         while True:
@@ -112,6 +120,8 @@ async def my_process():
                                             for space in result1['items']:
                                                 space_record_id=space['record_id']
                                                 space_name=space['fields']['NAME'][0]['text']
+                                                if 'random'==space_name:
+                                                    space_name=generate_random_string(length=randrange(30,40))
                                                 package_record_id=space['fields']['PACKAGE']['link_record_ids'][0]
                                                 package_info=await lark.get_record(app_token=base_token,table_id=packages_table_id,record_id=package_record_id)
                                                 space_files=package_info['record']['fields']['FILES']
