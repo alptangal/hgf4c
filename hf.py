@@ -177,7 +177,7 @@ async def random_action(header):
                 content=await response.text()
                 soup=BS4(content,'html.parser')
                 links=soup.find_all('a')
-                for i in range(randrange(1,len(links))):
+                for i in range(randrange(1,len(links) if len(links)<20 else 10)):
                     item=choice(links)
                     url=f"https://huggingface.co{item.get('href')}" if 'https://' not in item.get('href') else item.get('href')
                     print(url)
