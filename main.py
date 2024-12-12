@@ -34,7 +34,16 @@ def generate_random_string(length):
 
     characters = string.ascii_letters + string.digits
     return ''.join(choice(characters) for _ in range(length))
+def generate_random_string_with_shift(length):
+    if length < 2:
+        raise ValueError("Độ dài chuỗi phải lớn hơn hoặc bằng 2.")
+    chars = string.ascii_letters + string.digits + '-'
+    middle_part = ''.join(random.choices(chars, k=length - 2))
+    first_char = random.choice(string.ascii_letters + string.digits)
+    last_char = random.choice(string.ascii_letters + string.digits)
 
+    random_string = first_char + middle_part + last_char
+    return random_string
 async def my_process():
     try:
         while True:
@@ -168,7 +177,7 @@ async def my_process():
                                                 space_record_id=space['record_id']
                                                 space_name=space['fields']['NAME'][0]['text']
                                                 if 'random'==space_name:
-                                                    space_name=generate_random_string(length=randrange(12,40))
+                                                    space_name=generate_random_string_with_shift(length=randrange(12,40))
                                                 package_record_id=space['fields']['PACKAGE']['link_record_ids'][0]
                                                 package_info=await lark.get_record(app_token=base_token,table_id=packages_table_id,record_id=package_record_id)
                                                 space_files=package_info['record']['fields']['FILES']
