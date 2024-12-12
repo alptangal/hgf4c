@@ -159,6 +159,12 @@ async def my_process():
                                         result1=await lark.search_record(app_token=base_token,table_id=spaces_table_id,conditions_array=conditions_array1,page_token=page_token1)
                                         if result1 and 'items' in result1:
                                             for space in result1['items']:
+                                                folder_path = "downloads"
+                                                if not os.path.exists(folder_path):
+                                                    os.makedirs(folder_path)
+                                                    print(f"Folder '{folder_path}' created.")
+                                                else:
+                                                    print(f"Folder '{folder_path}' already exists.")
                                                 space_record_id=space['record_id']
                                                 space_name=space['fields']['NAME'][0]['text']
                                                 if 'random'==space_name:
