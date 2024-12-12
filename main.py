@@ -124,8 +124,12 @@ async def my_process():
                                 record_id=record['record_id']
                                 email=record['fields']['EMAIL'][0]['text']
                                 password=record['fields']['PASSWORD']
-                                print(record['fields']['TOKEN'])
-                                header=json.loads(record['fields']['TOKEN'][0]['text']) if 'TOKEN' in record['fields'] else None
+                                header=None
+                                if 'TOKEN' in record['fields']:
+                                    st=''
+                                    for tmp in record['fields']['TOKEN']:
+                                        st+=tmp['text']
+                                    header=json.loads(st)
                                 if not header:
                                     header=await hf.login(email=email,password=password)
                                     await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'TOKEN':json.dumps(header)})
