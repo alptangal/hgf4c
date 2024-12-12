@@ -6,6 +6,9 @@ from bs4 import BeautifulSoup as BS4
 import base64
 import json
 from datetime import datetime
+import headers_db
+import random
+from random import choice,randrange
 
 async def login(email,password):
     url='https://huggingface.co/login'
@@ -14,13 +17,22 @@ async def login(email,password):
             'username':email,
             'password':password
         }
-        async with session.post(url,data=data,allow_redirects=False) as response:
+        header={
+            'user-agent':choice(headers_db.user_agents),
+            'Accept-Language': choice(headers_db.accept_languages),
+            'Accept-Encoding': choice(headers_db.encodings),
+            'Connection': 'keep-alive',
+            'Referer':choice(headers_db.referers),
+            'X-Forwarded-For': f"{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}"
+        }
+        async with session.post(url,headers=header,data=data,allow_redirects=False) as response:
             if response.status==302:
                 rs=response.headers.get('set-cookie',None)
                 if rs:
                     token=re.search('token\=(.*?)\;.*',rs).group(1)
                     print(f"{email} login success")
-                    return token
+                    header['cookie']='token='+token
+                    return header
     print(f"{email} can\'t login")
     return False
 async def create_access_token(header,name='vs'):
@@ -144,4 +156,33 @@ async def create_new_file(header,git_path,file_name,content):
                         print(f"{file_name} created success")
                         return js
     print(f"{file_name} can't create")
+    return False
+async def fke_access_page(header,url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url,headers=header,allow_redirects=False) as response:
+            if response.status==200:
+                url1='https://huggingface.co/api/event'
+                data={"n":"pageview","u":url,"d":"huggingface.co","r":None,"p":{"loggedin":"true"}}
+                async with session.post(url,headers=header,json=data,allow_redirects=False) as response:
+                    if response.status==200:
+                        print(f"{url} access success")
+                        return True
+    print(f"{url} cam't access")
+    return False
+async def random_action(header):
+    url='https://huggingface.co/'
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url,headers=header,allow_redirects=False) as response:
+            if response.status==200:
+                content=await response.text()
+                soup=BS4(content,'html.parser')
+                links=soup.find_all('a')
+                for i in randrange(1,len(links)):
+                    item=randrange(links)
+                    url=f"https://huggingface.co{item.get('href')}"
+                    rs=await fke_access_page(header=header,url=url)
+                    await asyncio.sleep(randrange(10,100)/10)
+                print('Random actions success')
+                return True
+    print("Can't random actions")
     return False

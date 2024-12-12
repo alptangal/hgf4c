@@ -1,4 +1,4 @@
-import sys,os,time
+import sys,os,time,json
 from datetime import datetime
 from random import randrange,choice
 import random
@@ -87,19 +87,11 @@ async def my_process():
                                 record_id=record['record_id']
                                 email=record['fields']['EMAIL'][0]['text']
                                 password=record['fields']['PASSWORD']
-                                token=record['fields']['TOKEN'][0]['text'] if 'TOKEN' in record['fields'] else None
-                                if not token:
-                                    token=await hf.login(email=email,password=password)
-                                    await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'TOKEN':token})
-                                header={
-                                    'user-agent':choice(headers_db.user_agents),
-                                    'cookie':'token='+token,
-                                    'Accept-Language': choice(headers_db.accept_languages),
-                                    'Accept-Encoding': choice(headers_db.encodings),
-                                    'Connection': 'keep-alive',
-                                    'Referer':choice(headers_db.referers),
-                                    'X-Forwarded-For': f"{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}"
-                                }
+                                header=json.loads(record['fields']['TOKEN'][0]['text']) if 'TOKEN' in record['fields'] else None
+                                if not header:
+                                    header=await hf.login(email=email,password=password)
+                                    await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'TOKEN':json.dumps(header)})
+                                await hf.random_action(header=header)
                                 req=requests.get('https://huggingface.co/new-space',headers=header,allow_redirects=False)
                                 if req.status_code==200:
                                     await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'STATUS':'alive'})
@@ -160,6 +152,7 @@ async def my_process():
                                                     }
                                                 ]
                                                 rs=await hf.create_new_space(header=header,name=space_name,secrets=secrets)
+                                                await hf.random_action(header=header)
                                                 if rs:
                                                     git_path=rs['name']
                                                     await lark.update_record(app_token=base_token,table_id=spaces_table_id,record_id=space_record_id,value_fields={'NAME':space_name,'GIT_PATH':git_path,'STATUS':'completed','URL':f"https://{git_path.replace('/','-')}.hf.space"})
