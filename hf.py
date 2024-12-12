@@ -179,7 +179,7 @@ async def random_action(header):
                 links=soup.find_all('a')
                 print(len(links))
                 for i in range(len(links)):
-                    item=randrange(links)
+                    item=choice(links)
                     url=f"https://huggingface.co{item.get('href')}"
                     rs=await fke_access_page(header=header,url=url)
                     await asyncio.sleep(randrange(10,100)/10)
