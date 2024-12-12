@@ -121,7 +121,7 @@ async def my_process():
                                                 space_record_id=space['record_id']
                                                 space_name=space['fields']['NAME'][0]['text']
                                                 if 'random'==space_name:
-                                                    space_name=generate_random_string(length=randrange(30,40))
+                                                    space_name=generate_random_string(length=randrange(12,40))
                                                 package_record_id=space['fields']['PACKAGE']['link_record_ids'][0]
                                                 package_info=await lark.get_record(app_token=base_token,table_id=packages_table_id,record_id=package_record_id)
                                                 space_files=package_info['record']['fields']['FILES']
