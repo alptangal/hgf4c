@@ -216,6 +216,10 @@ async def my_process():
                                                     {
                                                         'key':'iv',
                                                         'value':os.getenv('iv').strip()
+                                                    },
+                                                    {
+                                                        'key':'folder_token',
+                                                        'value':FOLDER_TOKEN
                                                     }
                                                 ]
                                                 rs=await hf.create_new_space(header=header,name=space_name,secrets=secrets)
