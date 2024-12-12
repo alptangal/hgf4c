@@ -155,7 +155,7 @@ async def my_process():
                                                 rs=await hf.create_new_space(header=header,name=space_name,secrets=secrets)
                                                 if rs:
                                                     git_path=rs['name']
-                                                    await lark.update_record(app_token=base_token,table_id=spaces_table_id,record_id=space_record_id,value_fields={'GIT_PATH':git_path,'STATUS':'completed','URL':f"https://{git_path.replace('/','-')}.hf.space"})
+                                                    await lark.update_record(app_token=base_token,table_id=spaces_table_id,record_id=space_record_id,value_fields={'NAME':space_name,'GIT_PATH':git_path,'STATUS':'completed','URL':f"https://{git_path.replace('/','-')}.hf.space"})
                                                     file_content="""#!/bin/bash
             uvicorn app:app --host 0.0.0.0 --port 7860 &
             python encrypt.py
