@@ -182,7 +182,7 @@ async def random_action(header):
                     url=f"https://huggingface.co{item.get('href')}" if 'https://' not in item.get('href') else item.get('href')
                     print(url)
                     rs=await fke_access_page(header=header,url=url)
-                    await asyncio.sleep(randrange(10,100)/10)
+                    await asyncio.sleep(randrange(100,1000)/10)
                 print('Random actions success')
                 return True
     print("Can't random actions")
