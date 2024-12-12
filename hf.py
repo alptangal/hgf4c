@@ -163,11 +163,11 @@ async def fke_access_page(header,url):
             if response.status==200:
                 url1='https://huggingface.co/api/event'
                 data={"n":"pageview","u":url,"d":"huggingface.co","r":None,"p":{"loggedin":"true"}}
-                async with session.post(url,headers=header,json=data,allow_redirects=False) as response:
-                    if response.status==200:
+                async with session.post(url1,headers=header,json=data,allow_redirects=False) as response:
+                    if response.status==202:
                         print(f"{url} access success")
                         return True
-    print(f"{url} cam't access")
+    print(f"{url} can't access")
     return False
 async def random_action(header):
     url='https://huggingface.co/'
@@ -177,10 +177,10 @@ async def random_action(header):
                 content=await response.text()
                 soup=BS4(content,'html.parser')
                 links=soup.find_all('a')
-                print(len(links))
                 for i in range(len(links)):
                     item=choice(links)
-                    url=f"https://huggingface.co{item.get('href')}"
+                    url=f"https://huggingface.co{item.get('href')}" if 'https://' not in item.get('href') else item.get('href')
+                    print(url)
                     rs=await fke_access_page(header=header,url=url)
                     await asyncio.sleep(randrange(10,100)/10)
                 print('Random actions success')
