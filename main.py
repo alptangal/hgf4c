@@ -124,6 +124,7 @@ async def my_process():
                                 record_id=record['record_id']
                                 email=record['fields']['EMAIL'][0]['text']
                                 password=record['fields']['PASSWORD']
+                                print(record['fields']['TOKEN'])
                                 header=json.loads(record['fields']['TOKEN'][0]['text']) if 'TOKEN' in record['fields'] else None
                                 if not header:
                                     header=await hf.login(email=email,password=password)
