@@ -1,5 +1,5 @@
 import streamlit as st
-import main
+
 
 # Tiêu đề của ứng dụng
 st.title("Ứng dụng Streamlit đầu tiên của bạn")
@@ -26,3 +26,4 @@ data = pd.DataFrame(
 )
 
 st.line_chart(data)
+import main
