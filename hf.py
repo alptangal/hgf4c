@@ -80,6 +80,7 @@ async def create_new_space(header,name,secrets=[],sdk='docker',private=False,sle
     data={"sdk":"docker","hardware":"cpu-basic","storageTier":None,"sleepTimeSeconds":sleep_time_seconds,"secrets":secrets,"variables":[],"name":name,"type":"space","private":private,"devModeEnabled":False}
     async with aiohttp.ClientSession() as session:
         async with session.post(url,headers=header,json=data) as response:
+            print(await response.text())
             if response.status<400:
                 js=await response.json()
                 print(f'Space {name} created success')
