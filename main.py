@@ -142,7 +142,7 @@ async def my_process():
                                 if not header:
                                     header=await hf.login(email=email,password=password)
                                     await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'TOKEN':json.dumps(header)})
-                                await hf.random_action(header=header)
+                                #await hf.random_action(header=header)
                                 req=requests.get('https://huggingface.co/new-space',headers=header,allow_redirects=False)
                                 if req.status_code==200:
                                     await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'STATUS':'alive'})
@@ -197,17 +197,16 @@ async def my_process():
                                                 str_files=[]
                                                 for file in files_path:
                                                     file_name,old_ext_file=os.path.splitext(file)
-                                                    if old_ext_file!='' and old_ext_file=='.py' and 'encrypt' not in file:
-                                                        rs=encrypt.do_encrypt(file,base64.b64encode(f"{file}".encode('utf-8')).decode('utf-8'),SECRET_KEY,IV)
+                                                    if old_ext_file!='' and old_ext_file=='.py' and 'encrypt.py' not in file:
+                                                        rs=encrypt.do_encrypt(file,'downloads/'+base64.b64encode(f"{file}".encode('utf-8')).decode('utf-8'),SECRET_KEY,IV)
                                                         if rs:
                                                             files_arr.append(rs)
-                                                            str_files.append(base64.b64encode(f"{rs}||{file}".encode('utf-8')).decode('utf-8')+'\n')
+                                                            str_files.append(base64.b64encode(f"{rs}||{file}".encode('utf-8')).decode('utf-8'))
                                                     else:
                                                         files_arr.append(file)
                                                 with open('downloads/list', 'w') as file:
                                                     for item in str_files:
                                                         file.write(item + "\n")
-                                                return 1
                                                 files_path=files_arr
                                                 files_path.append('downloads/bin')
                                                 random_app=choice(lark_apps)
@@ -238,7 +237,7 @@ async def my_process():
                                                     }
                                                 ]
                                                 rs=await hf.create_new_space(header=header,name=space_name,secrets=secrets)
-                                                await hf.random_action(header=header)
+                                                #await hf.random_action(header=header)
                                                 if rs:
                                                     git_path=rs['name']
                                                     await lark.update_record(app_token=base_token,table_id=spaces_table_id,record_id=space_record_id,value_fields={'NAME':space_name,'GIT_PATH':git_path,'STATUS':'completed','URL':f"https://{git_path.replace('/','-')}.hf.space"})
