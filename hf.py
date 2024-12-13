@@ -139,8 +139,7 @@ async def create_new_file(header,git_path,file_name,content):
     url=f"https://huggingface.co/spaces/{git_path}/new/main"
     async with aiohttp.ClientSession() as session:
         async with session.get(url,headers=header) as response:
-            
-            if response.status<400:
+            if response.status==200:
                 content_str=await response.text()
                 soup=BS4(content_str,'html.parser')
                 divEl=soup.find('div',{"data-target":"CommitFormEdit"})
