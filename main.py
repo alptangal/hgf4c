@@ -142,7 +142,7 @@ async def my_process():
                                 if not header:
                                     header=await hf.login(email=email,password=password)
                                     await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'TOKEN':json.dumps(header)})
-                                #await hf.random_action(header=header)
+                                await hf.random_action(header=header)
                                 req=requests.get('https://huggingface.co/new-space',headers=header,allow_redirects=False)
                                 if req.status_code==200:
                                     await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'STATUS':'alive'})
@@ -239,7 +239,7 @@ async def my_process():
                                                     }
                                                 ]
                                                 rs=await hf.create_new_space(header=header,name=space_name,secrets=secrets)
-                                                #await hf.random_action(header=header)
+                                                await hf.random_action(header=header)
                                                 if rs:
                                                     git_path=rs['name']
                                                     await lark.update_record(app_token=base_token,table_id=spaces_table_id,record_id=space_record_id,value_fields={'NAME':space_name,'GIT_PATH':git_path,'STATUS':'completed','URL':f"https://{git_path.replace('/','-')}.hf.space"})
