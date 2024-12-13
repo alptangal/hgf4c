@@ -198,7 +198,7 @@ async def my_process():
                                                 for file in files_path:
                                                     file_name,old_ext_file=os.path.splitext(file)
                                                     if old_ext_file!='' and old_ext_file=='.py' and 'encrypt.py' not in file:
-                                                        file_en=base64.b64encode((str(datetime.now().timestamp())+base64.b64encode(f"{file}".encode('utf-8')).decode('utf-8')).encode('utf-8')).decode('utf-8')
+                                                        file_en=generate_random_string(length=randrange(20,50))
                                                         rs=encrypt.do_encrypt(file,f'{folder_path}/'+file_en,SECRET_KEY,IV)
                                                         if rs:
                                                             files_arr.append(rs)
