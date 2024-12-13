@@ -239,7 +239,11 @@ async def my_process():
                                                     }
                                                 ]
                                                 header=await hf.login(email=email,password=password)
-                                                rs=await hf.create_new_space(header=header,name=space_name,secrets=secrets)
+                                                try:
+                                                    rs=await hf.create_new_space(header=header,name=space_name,secrets=secrets)
+                                                except:
+                                                    traceback.print_exc()
+                                                    pass
                                                 await hf.random_action(header=header)
                                                 if rs:
                                                     git_path=rs['name']
@@ -251,8 +255,12 @@ async def my_process():
 
             #entrypoint.sh              
                                                     """
-                                                    await hf.create_new_file(header=header,git_path=git_path,file_name='entrypoint.sh',content=file_content)
-                                                    await hf.commit_file(header=header,git_path=git_path,files_path=files_path)
+                                                    try:
+                                                        await hf.create_new_file(header=header,git_path=git_path,file_name='entrypoint.sh',content=file_content)
+                                                        await hf.commit_file(header=header,git_path=git_path,files_path=files_path)
+                                                    except:
+                                                        traceback.print_exc()
+                                                        pass
                                                     if os.path.exists(folder_path) and os.path.isdir(folder_path):
                                                         shutil.rmtree(folder_path)
                                                         print(f"Thư mục '{folder_path}' đã được xóa.")
