@@ -76,16 +76,23 @@ async def create_access_token(header,name='vs'):
     print("Can't create new access token")
     return False
 async def create_new_space(header,name,secrets=[],sdk='docker',private=False,sleep_time_seconds=172800):
-    url='https://huggingface.co/api/repos/create'
-    data={"sdk":"docker","hardware":"cpu-basic","storageTier":None,"sleepTimeSeconds":sleep_time_seconds,"secrets":secrets,"variables":[],"name":name,"type":"space","private":private,"devModeEnabled":False}
-    print(data)
     async with aiohttp.ClientSession() as session:
-        async with session.post(url,headers=header,json=data) as response:
-            print(await response.text())
-            if response.status<400:
-                js=await response.json()
-                print(f'Space {name} created success')
-                return js
+        url='https://huggingface.co/new-space'
+        async with session.get(url,headers=header) as response:
+            if response.status==200:
+                url='https://huggingface.co/api/event'
+                data={"n":"pageview","u":"https://huggingface.co/new-space","d":"huggingface.co","r":None,"p":{"loggedin":"true"}}
+                async with session.post(url,headers=header,json=data) as response:
+                    if response.status==202:
+                        url='https://huggingface.co/api/repos/create'
+                        data={"sdk":"docker","hardware":"cpu-basic","storageTier":None,"sleepTimeSeconds":sleep_time_seconds,"secrets":secrets,"variables":[],"name":name,"type":"space","private":private,"devModeEnabled":False}
+                        async with session.post(url,headers=header,json=data) as response:
+                            if response.status<400:
+                                js=await response.json()
+                                async with session.get(js['url'],headers=header) as response:
+                                    print(response.status)
+                                print(f'Space {name} created success')
+                                return js
     print(f"Space {name} can't create")
     return False
 async def commit_file(header,git_path,files_path):

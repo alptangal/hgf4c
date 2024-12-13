@@ -238,6 +238,7 @@ async def my_process():
                                                         'value':FOLDER_TOKEN
                                                     }
                                                 ]
+                                                #header=await hf.login(email=email,password=password)
                                                 rs=await hf.create_new_space(header=header,name=space_name,secrets=secrets)
                                                 await hf.random_action(header=header)
                                                 if rs:
