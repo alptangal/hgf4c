@@ -59,7 +59,7 @@ async def my_process():
                             base_token=file['token']
                         elif 'lark_db' == file['name'].lower():
                             lark_db_token=file['token']
-                if 'has_more' in result and result['has_more']:
+                if result and 'has_more' in result and result['has_more']:
                     page_token=result['next_page_token']
                 else:
                     break
@@ -194,14 +194,20 @@ async def my_process():
                                                     with open('downloads/bin', 'r') as file:
                                                         ext = file.read()
                                                 files_arr=[]
+                                                str_files=[]
                                                 for file in files_path:
                                                     file_name,old_ext_file=os.path.splitext(file)
                                                     if old_ext_file!='' and old_ext_file=='.py' and 'encrypt' not in file:
-                                                        rs=encrypt.do_encrypt(file,file.replace(old_ext_file,f".{ext}"),SECRET_KEY,IV)
+                                                        rs=encrypt.do_encrypt(file,base64.b64encode(f"{file}".encode('utf-8')).decode('utf-8'),SECRET_KEY,IV)
                                                         if rs:
-                                                            files_arr.append(file.replace(old_ext_file,f".{ext}"))
+                                                            files_arr.append(rs)
+                                                            str_files.append(base64.b64encode(f"{rs}||{file}".encode('utf-8')).decode('utf-8')+'\n')
                                                     else:
                                                         files_arr.append(file)
+                                                with open('downloads/list', 'w') as file:
+                                                    for item in str_files:
+                                                        file.write(item + "\n")
+                                                return 1
                                                 files_path=files_arr
                                                 files_path.append('downloads/bin')
                                                 random_app=choice(lark_apps)
