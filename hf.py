@@ -97,7 +97,7 @@ async def commit_file(header,git_path,files_path):
             with open(path, "rb" ) as file:
                 content = file.read()
                 tmp={
-                    'path':path.replace('downloads/',''),
+                    'path':path.split('/')[-1],
                     'sample':base64.b64encode(content).decode('utf-8'),
                     'size':file_size
                 }
@@ -112,7 +112,7 @@ async def commit_file(header,git_path,files_path):
                 for path in files_path:
                     with open(path, "rb") as file:
                         content = file.read()
-                        tmp={"key":"file","value":{"content":base64.b64encode(content).decode('utf-8'),"path":path.replace('downloads/',''),"encoding":"base64"}}
+                        tmp={"key":"file","value":{"content":base64.b64encode(content).decode('utf-8'),"path":path.split('/')[-1],"encoding":"base64"}}
                         data.append(tmp)
                 ns=str({"key":"header","value":{"summary":f"Upload {datetime.now().timestamp()}","description":"","parentCommit":commitOid}})+'\n'
                 for st in data:
@@ -186,4 +186,14 @@ async def random_action(header):
                 print('Random actions success')
                 return True
     print("Can't random actions")
+    return False
+async def delete_space(header,organization,space_name):
+    url='https://huggingface.co/api/repos/delete'
+    data={"organization":organization,"name":space_name,"type":"space"}
+    async with aiohttp.ClientSession() as session:
+        async with session.delete(url,headers=header,allow_redirects=False) as response:
+            if response.status==200:
+                print(f"{space_name} deleted success")
+                return True
+    print(f"{space_name} can't delete")
     return False
