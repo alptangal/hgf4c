@@ -186,12 +186,12 @@ async def my_process():
                                                     rs=await lark.download_file(file['url'],file_name=f"{folder_path}/{file['name']}")
                                                     if rs:
                                                         files_path.append(f"{folder_path}/{file['name']}")
-                                                if not os.path.exists('{folder_path}/bin'):
+                                                if not os.path.exists(f'{folder_path}/bin'):
                                                     ext=generate_random_string(randrange(3,10))
-                                                    with open('{folder_path}/bin', 'w') as file:
+                                                    with open(f'{folder_path}/bin', 'w') as file:
                                                         file.write(ext)
                                                 else:
-                                                    with open('{folder_path}/bin', 'r') as file:
+                                                    with open(f'{folder_path}/bin', 'r') as file:
                                                         ext = file.read()
                                                 files_arr=[]
                                                 str_files=[]
@@ -199,18 +199,18 @@ async def my_process():
                                                     file_name,old_ext_file=os.path.splitext(file)
                                                     if old_ext_file!='' and old_ext_file=='.py' and 'encrypt.py' not in file:
                                                         file_en=base64.b64encode(f"{file}".encode('utf-8')).decode('utf-8')
-                                                        rs=encrypt.do_encrypt(file,'{folder_path}/'+file_en,SECRET_KEY,IV)
+                                                        rs=encrypt.do_encrypt(file,f'{folder_path}/'+file_en,SECRET_KEY,IV)
                                                         if rs:
                                                             files_arr.append(rs)
-                                                            str_files.append(base64.b64encode(f"{file_en}||{file.replace('{folder_path}/','')}".encode('utf-8')).decode('utf-8'))
+                                                            str_files.append(base64.b64encode(f"{datetime.now().timestamp()}||{file_en}||{file.replace(f'{folder_path}/','')}".encode('utf-8')).decode('utf-8'))
                                                     else:
                                                         files_arr.append(file)
-                                                with open('{folder_path}/list', 'w') as file:
+                                                with open(f'{folder_path}/list', 'w') as file:
                                                     for item in str_files:
                                                         file.write(item + "\n")
                                                 files_path=files_arr
-                                                files_path.append('{folder_path}/bin')
-                                                files_path.append('{folder_path}/list')
+                                                files_path.append(f'{folder_path}/bin')
+                                                files_path.append(f'{folder_path}/list')
                                                 random_app=choice(lark_apps)
                                                 secrets=[
                                                     {
@@ -252,7 +252,6 @@ async def my_process():
                                                     """
                                                     await hf.create_new_file(header=header,git_path=git_path,file_name='entrypoint.sh',content=file_content)
                                                     await hf.commit_file(header=header,git_path=git_path,files_path=files_path)
-                                                    folder_path='downloads'
                                                     if os.path.exists(folder_path) and os.path.isdir(folder_path):
                                                         shutil.rmtree(folder_path)
                                                         print(f"Thư mục '{folder_path}' đã được xóa.")
