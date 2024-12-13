@@ -209,6 +209,7 @@ async def my_process():
                                                         file.write(item + "\n")
                                                 files_path=files_arr
                                                 files_path.append('downloads/bin')
+                                                files_path.append('downloads/list')
                                                 random_app=choice(lark_apps)
                                                 secrets=[
                                                     {
