@@ -78,6 +78,7 @@ async def create_access_token(header,name='vs'):
 async def create_new_space(header,name,secrets=[],sdk='docker',private=False,sleep_time_seconds=172800):
     url='https://huggingface.co/api/repos/create'
     data={"sdk":"docker","hardware":"cpu-basic","storageTier":None,"sleepTimeSeconds":sleep_time_seconds,"secrets":secrets,"variables":[],"name":name,"type":"space","private":private,"devModeEnabled":False}
+    print(data)
     async with aiohttp.ClientSession() as session:
         async with session.post(url,headers=header,json=data) as response:
             print(await response.text())
