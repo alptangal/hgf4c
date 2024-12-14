@@ -141,11 +141,20 @@ async def my_process():
                                     header=json.loads(st)
                                 if not header:
                                     header=await hf.login(email=email,password=password)
-                                    await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'TOKEN':json.dumps(header)})
-                                await hf.random_action(header=header)
+                                    try:
+                                        await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'TOKEN':json.dumps(header)})
+                                    except:
+                                        traceback.print_exc()
+                                try:
+                                    await hf.random_action(header=header)
+                                except:
+                                    traceback.print_exc()
                                 req=requests.get('https://huggingface.co/new-space',headers=header,allow_redirects=False)
                                 if req.status_code==200:
-                                    await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'STATUS':'alive'})
+                                    try:
+                                        await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'STATUS':'alive'})
+                                    except:
+                                        traceback.print_exc()
                                     conditions_array1=[
                                         {
                                             'field_name':'STATUS',
@@ -165,114 +174,120 @@ async def my_process():
                                     ]
                                     page_token1=None
                                     while True:
-                                        result1=await lark.search_record(app_token=base_token,table_id=spaces_table_id,conditions_array=conditions_array1,page_token=page_token1)
-                                        if result1 and 'items' in result1:
-                                            for space in result1['items']:
-                                                folder_path = f"downloads/{int(datetime.now().timestamp())}"
-                                                if not os.path.exists(folder_path):
-                                                    os.makedirs(folder_path)
-                                                    print(f"Folder '{folder_path}' created.")
-                                                else:
-                                                    print(f"Folder '{folder_path}' already exists.")
-                                                space_record_id=space['record_id']
-                                                space_name=space['fields']['NAME'][0]['text']
-                                                if 'random'==space_name:
-                                                    space_name=generate_random_string_with_shift(length=randrange(12,40))
-                                                package_record_id=space['fields']['PACKAGE']['link_record_ids'][0]
-                                                package_info=await lark.get_record(app_token=base_token,table_id=packages_table_id,record_id=package_record_id)
-                                                space_files=package_info['record']['fields']['FILES']
-                                                files_path=[]
-                                                for file in space_files:
-                                                    rs=await lark.download_file(file['url'],file_name=f"{folder_path}/{file['name']}")
-                                                    if rs:
-                                                        files_path.append(f"{folder_path}/{file['name']}")
-                                                if not os.path.exists(f'{folder_path}/bin'):
-                                                    ext=generate_random_string(randrange(3,10))
-                                                    with open(f'{folder_path}/bin', 'w') as file:
-                                                        file.write(ext)
-                                                else:
-                                                    with open(f'{folder_path}/bin', 'r') as file:
-                                                        ext = file.read()
-                                                files_arr=[]
-                                                str_files=[]
-                                                for file in files_path:
-                                                    file_name,old_ext_file=os.path.splitext(file)
-                                                    if old_ext_file!='' and old_ext_file=='.py' and 'encrypt.py' not in file:
-                                                        file_en=generate_random_string(length=randrange(20,50))
-                                                        rs=encrypt.do_encrypt(file,f'{folder_path}/'+file_en,SECRET_KEY,IV)
-                                                        if rs:
-                                                            files_arr.append(rs)
-                                                            str_files.append(base64.b64encode(f"{datetime.now().timestamp()}||{file_en}||{file.replace(f'{folder_path}/','')}".encode('utf-8')).decode('utf-8'))
+                                        try:
+                                            result1=await lark.search_record(app_token=base_token,table_id=spaces_table_id,conditions_array=conditions_array1,page_token=page_token1)
+                                            if result1 and 'items' in result1:
+                                                for space in result1['items']:
+                                                    folder_path = f"downloads/{int(datetime.now().timestamp())}"
+                                                    if not os.path.exists(folder_path):
+                                                        os.makedirs(folder_path)
+                                                        print(f"Folder '{folder_path}' created.")
                                                     else:
-                                                        files_arr.append(file)
-                                                with open(f'{folder_path}/list', 'w') as file:
-                                                    for item in str_files:
-                                                        file.write(item + "\n")
-                                                files_path=files_arr
-                                                files_path.append(f'{folder_path}/bin')
-                                                files_path.append(f'{folder_path}/list')
-                                                random_app=choice(lark_apps)
-                                                secrets=[
-                                                    {
-                                                        'key':'app_id',
-                                                        'value':random_app['fields']['APP_ID'][0]['text']
-                                                    },
-                                                    {
-                                                        'key':'app_secret',
-                                                        'value':random_app['fields']['APP_SECRET'][0]['text']
-                                                    },
-                                                    {
-                                                        'key':'base_token',
-                                                        'value':'GJhXbg4l5aRzjBsUsl6lFaRjgfZ'
-                                                    },
-                                                    {
-                                                        'key':'secret_key',
-                                                        'value':os.getenv('secret_key').strip()
-                                                    },
-                                                    {
-                                                        'key':'iv',
-                                                        'value':os.getenv('iv').strip()
-                                                    },
-                                                    {
-                                                        'key':'folder_token',
-                                                        'value':FOLDER_TOKEN
-                                                    }
-                                                ]
-                                                header=await hf.login(email=email,password=password)
-                                                try:
-                                                    rs=await hf.create_new_space(header=header,name=space_name,secrets=secrets)
-                                                except:
-                                                    traceback.print_exc()
-                                                    pass
-                                                await hf.random_action(header=header)
-                                                if rs:
-                                                    git_path=rs['name']
-                                                    await lark.update_record(app_token=base_token,table_id=spaces_table_id,record_id=space_record_id,value_fields={'NAME':space_name,'GIT_PATH':git_path,'STATUS':'completed','URL':f"https://{git_path.replace('/','-')}.hf.space"})
-                                                    file_content="""#!/bin/bash
-            uvicorn app:app --host 0.0.0.0 --port 7860 &
-            python encrypt.py
-            wait
-
-            #entrypoint.sh              
-                                                    """
+                                                        print(f"Folder '{folder_path}' already exists.")
+                                                    space_record_id=space['record_id']
+                                                    space_name=space['fields']['NAME'][0]['text']
+                                                    if 'random'==space_name:
+                                                        space_name=generate_random_string_with_shift(length=randrange(12,40))
+                                                    package_record_id=space['fields']['PACKAGE']['link_record_ids'][0]
+                                                    package_info=await lark.get_record(app_token=base_token,table_id=packages_table_id,record_id=package_record_id)
+                                                    space_files=package_info['record']['fields']['FILES']
+                                                    files_path=[]
+                                                    for file in space_files:
+                                                        rs=await lark.download_file(file['url'],file_name=f"{folder_path}/{file['name']}")
+                                                        if rs:
+                                                            files_path.append(f"{folder_path}/{file['name']}")
+                                                    if not os.path.exists(f'{folder_path}/bin'):
+                                                        ext=generate_random_string(randrange(3,10))
+                                                        with open(f'{folder_path}/bin', 'w') as file:
+                                                            file.write(ext)
+                                                    else:
+                                                        with open(f'{folder_path}/bin', 'r') as file:
+                                                            ext = file.read()
+                                                    files_arr=[]
+                                                    str_files=[]
+                                                    for file in files_path:
+                                                        file_name,old_ext_file=os.path.splitext(file)
+                                                        if old_ext_file!='' and old_ext_file=='.py' and 'encrypt.py' not in file:
+                                                            file_en=generate_random_string(length=randrange(20,50))
+                                                            rs=encrypt.do_encrypt(file,f'{folder_path}/'+file_en,SECRET_KEY,IV)
+                                                            if rs:
+                                                                files_arr.append(rs)
+                                                                str_files.append(base64.b64encode(f"{datetime.now().timestamp()}||{file_en}||{file.replace(f'{folder_path}/','')}".encode('utf-8')).decode('utf-8'))
+                                                        else:
+                                                            files_arr.append(file)
+                                                    with open(f'{folder_path}/list', 'w') as file:
+                                                        for item in str_files:
+                                                            file.write(item + "\n")
+                                                    files_path=files_arr
+                                                    files_path.append(f'{folder_path}/bin')
+                                                    files_path.append(f'{folder_path}/list')
+                                                    random_app=choice(lark_apps)
+                                                    secrets=[
+                                                        {
+                                                            'key':'app_id',
+                                                            'value':random_app['fields']['APP_ID'][0]['text']
+                                                        },
+                                                        {
+                                                            'key':'app_secret',
+                                                            'value':random_app['fields']['APP_SECRET'][0]['text']
+                                                        },
+                                                        {
+                                                            'key':'base_token',
+                                                            'value':'GJhXbg4l5aRzjBsUsl6lFaRjgfZ'
+                                                        },
+                                                        {
+                                                            'key':'secret_key',
+                                                            'value':os.getenv('secret_key').strip()
+                                                        },
+                                                        {
+                                                            'key':'iv',
+                                                            'value':os.getenv('iv').strip()
+                                                        },
+                                                        {
+                                                            'key':'folder_token',
+                                                            'value':FOLDER_TOKEN
+                                                        }
+                                                    ]
+                                                    header=await hf.login(email=email,password=password)
                                                     try:
-                                                        await hf.create_new_file(header=header,git_path=git_path,file_name='entrypoint.sh',content=file_content)
-                                                        await hf.commit_file(header=header,git_path=git_path,files_path=files_path)
+                                                        rs=await hf.create_new_space(header=header,name=space_name,secrets=secrets)
                                                     except:
                                                         traceback.print_exc()
                                                         pass
-                                                    if os.path.exists(folder_path) and os.path.isdir(folder_path):
-                                                        shutil.rmtree(folder_path)
-                                                        print(f"Thư mục '{folder_path}' đã được xóa.")
-                                                    else:
-                                                        print(f"Thư mục '{folder_path}' không tồn tại.")
-                                        if 'has_more' in result1 and result1['has_more']:
-                                            page_token=result1['page_token']
-                                        else:
-                                            break
+                                                    await hf.random_action(header=header)
+                                                    if rs:
+                                                        git_path=rs['name']
+                                                        await lark.update_record(app_token=base_token,table_id=spaces_table_id,record_id=space_record_id,value_fields={'NAME':space_name,'GIT_PATH':git_path,'STATUS':'completed','URL':f"https://{git_path.replace('/','-')}.hf.space"})
+                                                        file_content="""#!/bin/bash
+                uvicorn app:app --host 0.0.0.0 --port 7860 &
+                python encrypt.py
+                wait
+
+                #entrypoint.sh              
+                                                        """
+                                                        try:
+                                                            await hf.create_new_file(header=header,git_path=git_path,file_name='entrypoint.sh',content=file_content)
+                                                            await hf.commit_file(header=header,git_path=git_path,files_path=files_path)
+                                                        except:
+                                                            traceback.print_exc()
+                                                            pass
+                                                        if os.path.exists(folder_path) and os.path.isdir(folder_path):
+                                                            shutil.rmtree(folder_path)
+                                                            print(f"Thư mục '{folder_path}' đã được xóa.")
+                                                        else:
+                                                            print(f"Thư mục '{folder_path}' không tồn tại.")
+                                            if 'has_more' in result1 and result1['has_more']:
+                                                page_token=result1['page_token']
+                                            else:
+                                                break
+                                        except:
+                                            traceback.print_exc()
                                 else:
                                     print(f"{email} is suspended")
-                                    await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'STATUS':'dead'})
+                                    try:
+                                        await lark.update_record(app_token=base_token,table_id=accounts_table_id,record_id=record_id,value_fields={'STATUS':'dead'})
+                                    except:
+                                        traceback.print_exc()
                                     page_token1=None
                                     conditions_array1=[
                                         {
@@ -282,14 +297,17 @@ async def my_process():
                                         }
                                     ]
                                     while True:
-                                        result1=await lark.search_record(app_token=base_token,table_id=spaces_table_id,conditions_array=conditions_array1,page_token=page_token1)
-                                        if result1 and 'items' in result1:
-                                            for item in result1['items']:
-                                                await lark.update_record(app_token=base_token,table_id=spaces_table_id,record_id=item['record_id'],value_fields={'STATUS':'dead'})
-                                        if 'has_more' in result1 and result1['has_more']:
-                                            page_token=result1['page_token']
-                                        else:
-                                            break
+                                        try:
+                                            result1=await lark.search_record(app_token=base_token,table_id=spaces_table_id,conditions_array=conditions_array1,page_token=page_token1)
+                                            if result1 and 'items' in result1:
+                                                for item in result1['items']:
+                                                    await lark.update_record(app_token=base_token,table_id=spaces_table_id,record_id=item['record_id'],value_fields={'STATUS':'dead'})
+                                            if 'has_more' in result1 and result1['has_more']:
+                                                page_token=result1['page_token']
+                                            else:
+                                                break
+                                        except:
+                                            traceback.print_exc()
                         if result and 'has_more' in result and result['has_more']:
                             page_token=result['page_token']
                         else:

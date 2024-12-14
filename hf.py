@@ -9,6 +9,7 @@ from datetime import datetime
 import headers_db
 import random
 from random import choice,randrange
+import traceback
 
 async def login(email,password):
     url='https://huggingface.co/login'
@@ -188,9 +189,11 @@ async def random_action(header):
                 for i in range(randrange(1,len(links) if len(links)<20 else 10)):
                     item=choice(links)
                     url=f"https://huggingface.co{item.get('href')}" if 'https://' not in item.get('href') else item.get('href')
-                    print(url)
-                    rs=await fke_access_page(header=header,url=url)
-                    await asyncio.sleep(randrange(500,1500)/100)
+                    try:
+                        rs=await fke_access_page(header=header,url=url)
+                        await asyncio.sleep(randrange(500,1500)/100)
+                    except:
+                        traceback.print_exc()
                 print('Random actions success')
                 return True
     print("Can't random actions")
