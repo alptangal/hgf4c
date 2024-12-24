@@ -88,10 +88,11 @@ async def my_process():
                     ]
                     while True:
                         result=await lark.search_record(app_token=lark_db_token,table_id=apps_table_id,page_token=page_token,conditions_array=conditions_array)
-                        if result and 'items' in result:
-                            lark_apps+=result['items']
-                        if 'has_more' in result and result['has_more']:
-                            page_token=result['next_page_token']
+                        if result:
+                            if 'items' in result:
+                                lark_apps+=result['items']
+                            if 'has_more' in result and result['has_more']:
+                                page_token=result['next_page_token']
                         else:
                             break
                 page_token=None
@@ -112,7 +113,7 @@ async def my_process():
                         page_token=result['next_page_token']
                     else:
                         break
-                if accounts_table_id:
+                if accounts_table_id and len(lark_apps)>0:
                     page_token=None
                     conditions_array=[
                         {
