@@ -72,7 +72,7 @@ async def my_process():
                         for table in result:
                             if 'apps'==table['name']:
                                 apps_table_id=table['table_id']
-                    if 'has_more' in result and result['has_more']:
+                    if result and 'has_more' in result and result['has_more']:
                         page_token=result['next_page_token']
                     else:
                         break
@@ -91,8 +91,8 @@ async def my_process():
                         if result:
                             if 'items' in result:
                                 lark_apps+=result['items']
-                            if 'has_more' in result and result['has_more']:
-                                page_token=result['next_page_token']
+                        if result and 'has_more' in result and result['has_more']:
+                                page_token=result['page_token']
                         else:
                             break
                 page_token=None
@@ -109,7 +109,7 @@ async def my_process():
                                 spaces_table_id=table['table_id']
                             elif 'packages' ==table['name']:
                                 packages_table_id=table['table_id']
-                    if 'has_more' in result and result['has_more']:
+                    if result and 'has_more' in result and result['has_more']:
                         page_token=result['next_page_token']
                     else:
                         break
@@ -277,7 +277,7 @@ async def my_process():
                                                             print(f"Thư mục '{folder_path}' đã được xóa.")
                                                         else:
                                                             print(f"Thư mục '{folder_path}' không tồn tại.")
-                                            if 'has_more' in result1 and result1['has_more']:
+                                            if result and 'has_more' in result1 and result1['has_more']:
                                                 page_token=result1['page_token']
                                             else:
                                                 break
@@ -303,7 +303,7 @@ async def my_process():
                                             if result1 and 'items' in result1:
                                                 for item in result1['items']:
                                                     await lark.update_record(app_token=base_token,table_id=spaces_table_id,record_id=item['record_id'],value_fields={'STATUS':'dead'})
-                                            if 'has_more' in result1 and result1['has_more']:
+                                            if result1 and 'has_more' in result1 and result1['has_more']:
                                                 page_token=result1['page_token']
                                             else:
                                                 break
