@@ -309,10 +309,46 @@ async def my_process():
                                                 break
                                         except:
                                             traceback.print_exc()
+                                try:
+                                    await hf.random_action(header=header)
+                                except:
+                                    traceback.print_exc()
+                                
                         if result and 'has_more' in result and result['has_more']:
                             page_token=result['page_token']
                         else:
                             break
+                        conditions_array1=[
+                            {
+                                'field_name':'OWNER',
+                                'operator':'contains',
+                                'value':[record_id]
+                            },
+                            {
+                                'field_name':'PACKAGE',
+                                'operator':'isNotEmpty',
+                                'value':[]
+                            },
+                            {
+                                'field_name':'ACTIONS',
+                                'operator':'isNotEmpty',
+                                'value':['delete']
+                            }
+                        ]
+                        page_token1=None
+                        while True:
+                            try:
+                                result1=await lark.search_record(app_token=base_token,table_id=spaces_table_id,conditions_array=conditions_array1,page_token=page_token1)
+                                if result1 and 'items' in result1:
+                                    for item in result1['items']:
+                                        try:
+                                            rs=await hf.delete_space(header=header,organization=item['fields']['GIT_PATH'][0]['text'].split('/')[0],pace_name=item['fields']['NAME'][0]['text'])
+                                            if rs:
+                                                await lark.delete_record(app_token=base_token,table_id=spaces_table_id,record_id=item['record_id'])
+                                        except:
+                                            traceback.print_exc()
+                            except:
+                                traceback.print_exc()
             await asyncio.sleep(3)
     except:
         traceback.print_exc()
