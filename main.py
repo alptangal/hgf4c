@@ -337,7 +337,7 @@ async def my_process():
                                         if result1 and 'items' in result1:
                                             for item in result1['items']:
                                                 try:
-                                                    rs=await hf.delete_space(header=header,organization=item['fields']['GIT_PATH'][0]['text'].split('/')[0],pace_name=item['fields']['NAME'][0]['text'])
+                                                    rs=await hf.delete_space(header=header,organization=item['fields']['GIT_PATH'][0]['text'].split('/')[0],space_name=item['fields']['NAME'][0]['text'])
                                                     if rs:
                                                         await lark.delete_record(app_token=base_token,table_id=spaces_table_id,record_id=item['record_id'])
                                                 except:
