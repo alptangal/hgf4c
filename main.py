@@ -326,7 +326,7 @@ async def my_process():
                                     },
                                     {
                                         'field_name':'ACTIONS',
-                                        'operator':'isNotEmpty',
+                                        'operator':'contains',
                                         'value':['delete']
                                     }
                                 ]
