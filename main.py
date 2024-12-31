@@ -347,6 +347,10 @@ async def my_process():
                                                 await lark.delete_record(app_token=base_token,table_id=spaces_table_id,record_id=item['record_id'])
                                         except:
                                             traceback.print_exc()
+                                if result1 and 'has_more' in result1 and result1['has_more']:
+                                    page_token1=result1['page_token']
+                                else:
+                                    break
                             except:
                                 traceback.print_exc()
             await asyncio.sleep(3)
