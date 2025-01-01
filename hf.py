@@ -202,7 +202,7 @@ async def delete_space(header,organization,space_name):
     url='https://huggingface.co/api/repos/delete'
     data={"organization":organization,"name":space_name,"type":"space"}
     async with aiohttp.ClientSession() as session:
-        async with session.delete(url,headers=header,allow_redirects=False) as response:
+        async with session.delete(url,headers=header,json=data,allow_redirects=False) as response:
             if response.status==200:
                 print(f"{space_name} deleted success")
                 return True
