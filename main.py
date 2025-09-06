@@ -44,7 +44,30 @@ def generate_random_string_with_shift(length):
 
     random_string = first_char + middle_part + last_char
     return random_string
+def is_running():
+    url='https://huggingface.co/spaces/megaphuongdo/test1'
+    response=requests.get(url)
+    if response.status_code<400:
+        return 'Running' in response.text
+    return False
+def restart_space():
+    url='https://huggingface.co/api/spaces/megaphuongdo/test1/restart'
+    headers={
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0',
+        'Cookie': 'token=ZFaMrZlaCBPrILUqWuJMhJZpxeJzkHifIMHpGwpauBDfAqnYdNtDcwFbuXZmurjqyNljwyiSbVjTcBKlloAzfrsKvWDOtNSxGenYTbZbdMWxABIPGkRuvAWNXuYBJbJv;'
+    }
+    response=requests.post(url,headers)
+    if response.status_code<400:
+        return True
+    return False
 async def my_process():
+    try:
+        while True:
+            if(!is_running()):
+                restart_space()
+            await asyncio.sleep(15)
+    except Exception as error:
+        print(error)
     try:
         while True:
             lark=basic.LarkClass(APP_ID,APP_SECRET)
