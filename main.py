@@ -54,7 +54,7 @@ def restart_space():
     url='https://huggingface.co/api/spaces/megaphuongdo/test1/restart'
     headers={
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0',
-        'Cookie': 'token=ZFaMrZlaCBPrILUqWuJMhJZpxeJzkHifIMHpGwpauBDfAqnYdNtDcwFbuXZmurjqyNljwyiSbVjTcBKlloAzfrsKvWDOtNSxGenYTbZbdMWxABIPGkRuvAWNXuYBJbJv;'
+        'Cookie': 'token='+os.environ('hf_token')+';'
     }
     response=requests.post(url,headers)
     if response.status_code<400:
