@@ -63,7 +63,7 @@ def restart_space():
 async def my_process():
     try:
         while True:
-            if(!is_running()):
+            if !is_running():
                 result=restart_space()
                 print(result)
             await asyncio.sleep(15)
