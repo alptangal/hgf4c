@@ -54,21 +54,14 @@ def restart_space():
     url='https://huggingface.co/api/spaces/megaphuongdo/test1/restart'
     headers={
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0',
-        'Cookie': 'token='+os.getevn('hf_token')+';'
+        'Cookie': 'token='+os.getenv('hf_token')+';'
     }
     response=requests.post(url,headers)
     if response.status_code<400:
         return True
     return False
 async def my_process():
-    try:
-        while True:
-            if not is_running():
-                result=restart_space()
-                print(result)
-            await asyncio.sleep(15)
-    except Exception as error:
-        print(error)
+    
     try:
         while True:
             lark=basic.LarkClass(APP_ID,APP_SECRET)
@@ -381,7 +374,14 @@ async def my_process():
     except:
         traceback.print_exc()
         pass
-
+async def my_process1():
+    try:
+        while True:
+            if(!is_running()):
+                restart_space()
+            await asyncio.sleep(15)
+    except Exception as error:
+        print(error)
 async def main():
     try:
         req=requests.get('http://localhost:8888')
@@ -389,7 +389,7 @@ async def main():
     except Exception as error:
         server.b() 
         try:
-            await my_process()
+            await my_process1()
         except Exception as err:
             traceback.print_exc()
             pass
