@@ -14,6 +14,7 @@ import headers_db
 import encrypt
 import base64
 import shutil
+from bs4 import BeautifulSoup
 load_dotenv()
 
 FOLDER_TOKEN=os.getenv('folder_token').strip().replace("\n",'')
@@ -47,16 +48,31 @@ def generate_random_string_with_shift(length):
 def is_running():
     url='https://huggingface.co/spaces/megaphuongdo/test1'
     response=requests.get(url)
+    print(response)
     if response.status_code<400:
+        print('Running' in response.text)
         return 'Running' in response.text
     return False
 def restart_space():
-    url='https://huggingface.co/api/spaces/megaphuongdo/test1/restart'
-    headers={
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0',
-        'Cookie': 'token='+os.getenv('hf_token')+';'
+    url='https://huggingface.co/spaces/megaphuongdo/test1'
+    headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'}
+    cookies={'token':os.getenv('hf_token')}
+    response=requests.get(url,headers,cookies=cookies)
+    soup=BeautifulSoup(response.text,'html.parser')
+    csrf_token=soup.find('input',attrs={'name':'csrf'})['value']
+    url='https://huggingface.co/spaces/megaphuongdo/test1/start'
+    data={
+        'csrf':csrf_token
     }
-    response=requests.post(url,headers)
+    headers={
+        'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
+        'referer':'https://huggingface.co/spaces/megaphuongdo/test1'
+    }
+    response=requests.post(url,headers=headers,cookies=cookies,data=data)
+    print(response,'started')
+    url='https://huggingface.co/api/spaces/megaphuongdo/test1/restart'
+    response=requests.post(url,cookies=cookies)
+    print(response,'restarted')
     if response.status_code<400:
         return True
     return False
@@ -66,18 +82,19 @@ async def my_process1():
         while True:
             if not is_running():
                 restart_space()
-            await asyncio.sleep(15)
+            await asyncio.sleep(1)
     except Exception as error:
         print(error)
 async def main():
     try:
-        req=requests.get('http://localhost:8888')
+        req=requests.get('http://localhost:888')
         sys.exit("Exited")
     except Exception as error:
         server.b() 
         try:
             await my_process1()
         except Exception as err:
+            print(err)
             traceback.print_exc()
             pass
 asyncio.run(main())
