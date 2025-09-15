@@ -50,8 +50,7 @@ def is_running():
     response=requests.get(url)
     print(response)
     if response.status_code<400:
-        print('Running' in response.text)
-        return 'Running' in response.text
+        return 'Sleeping' in response.text
     return False
 def restart_space():
     url='https://huggingface.co/spaces/megaphuongdo/test1'
