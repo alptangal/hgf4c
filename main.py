@@ -50,9 +50,9 @@ def is_running():
     response=requests.get(url)
     print(response)
     if response.status_code<400:
-        return 'Sleeping' in response.text
+        return 'Sleeping' not in response.text
     return False
-def restart_space():
+async def restart_space():
     url='https://huggingface.co/spaces/megaphuongdo/test1'
     headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'}
     cookies={'token':os.getenv('hf_token')}
@@ -74,6 +74,11 @@ def restart_space():
     print(response,'restarted')
     if response.status_code<400:
         return True
+    stop=False
+    while not stop:
+        if is_running():
+            stop=True
+        await asyncio.sleep(1)
     return False
 
 async def my_process1():
@@ -81,7 +86,6 @@ async def my_process1():
         while True:
             if not is_running():
                 restart_space()
-                await asyncio.sleep(120)
             await asyncio.sleep(1)
     except Exception as error:
         print(error)
