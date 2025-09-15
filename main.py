@@ -82,6 +82,7 @@ async def my_process1():
         while True:
             if not is_running():
                 restart_space()
+                await asyncio.sleep(120)
             await asyncio.sleep(1)
     except Exception as error:
         print(error)
