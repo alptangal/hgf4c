@@ -46,30 +46,30 @@ def generate_random_string_with_shift(length):
     random_string = first_char + middle_part + last_char
     return random_string
 def is_running():
-    url='https://huggingface.co/spaces/megaphuongdo/test1'
+    url='https://huggingface.co/spaces/megaphuongdo/test'
     response=requests.get(url)
     print(response)
     if response.status_code<400:
         return 'Sleeping' not in response.text
     return False
 async def restart_space():
-    url='https://huggingface.co/spaces/megaphuongdo/test1'
+    url='https://huggingface.co/spaces/megaphuongdo/test'
     headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'}
     cookies={'token':os.getenv('hf_token')}
     response=requests.get(url,headers,cookies=cookies)
     soup=BeautifulSoup(response.text,'html.parser')
     csrf_token=soup.find('input',attrs={'name':'csrf'})['value']
-    url='https://huggingface.co/spaces/megaphuongdo/test1/start'
+    url='https://huggingface.co/spaces/megaphuongdo/test/start'
     data={
         'csrf':csrf_token
     }
     headers={
         'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
-        'referer':'https://huggingface.co/spaces/megaphuongdo/test1'
+        'referer':'https://huggingface.co/spaces/megaphuongdo/test'
     }
     response=requests.post(url,headers=headers,cookies=cookies,data=data)
     print(response,'started')
-    url='https://huggingface.co/api/spaces/megaphuongdo/test1/restart'
+    url='https://huggingface.co/api/spaces/megaphuongdo/test/restart'
     response=requests.post(url,cookies=cookies)
     print(response,'restarted')
     if response.status_code<400:
