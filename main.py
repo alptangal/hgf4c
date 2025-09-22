@@ -22,7 +22,7 @@ APP_ID=os.getenv('app_id').strip().replace("\n",'')
 APP_SECRET=os.getenv('app_secret').strip().replace("\n",'')
 SECRET_KEY=base64.b64decode(os.getenv('secret_key').strip())
 IV=base64.b64decode(os.getenv('iv').strip())
-MAIN_URL='https://huggingface.co/spaces/megaphuongdo/test1'
+MAIN_URL='https://huggingface.co/spaces/megaphuongdo/test'
 folder_path = "downloads"
 if not os.path.exists(folder_path):
     os.makedirs(folder_path)
