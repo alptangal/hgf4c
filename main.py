@@ -22,7 +22,7 @@ APP_ID=os.getenv('app_id').strip().replace("\n",'')
 APP_SECRET=os.getenv('app_secret').strip().replace("\n",'')
 SECRET_KEY=base64.b64decode(os.getenv('secret_key').strip())
 IV=base64.b64decode(os.getenv('iv').strip())
-MAIN_URL='https://huggingface.co/spaces/megaphuongdo/test'
+MAIN_URLS=['https://huggingface.co/spaces/megaphuongdo/test','https://huggingface.co/spaces/megaphuongdo/test3']
 folder_path = "downloads"
 if not os.path.exists(folder_path):
     os.makedirs(folder_path)
@@ -46,54 +46,57 @@ def generate_random_string_with_shift(length):
     random_string = first_char + middle_part + last_char
     return random_string
 async def is_running():
-    url=MAIN_URL
-    response=requests.get(url)
-    print(response)
-    if response.status_code<400:
-        return 'Running' in response.text
-    return False
+    for MAIN_URL in MAIN_URLS:
+        url=MAIN_URL
+        response=requests.get(url)
+        print(response)
+        if response.status_code<400:
+            return 'Running' in response.text
+        return False
 async def restart_space():
-    url=MAIN_URL
-    headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'}
-    cookies={'token':os.getenv('hf_token')}
-    response=requests.get(url,headers,cookies=cookies)
-    soup=BeautifulSoup(response.text,'html.parser')
-    csrf_token=soup.find('input',attrs={'name':'csrf'})['value']
-    url=MAIN_URL+'/start'
-    data={
-        'csrf':csrf_token
-    }
-    headers={
-        'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
-        'referer':MAIN_URL,
-        
-    }
-    response=requests.post(url,headers=headers,cookies=cookies,data=data)
-    print(response,'Started' if response.status_code<400 else 'can\'t start')
-    url=MAIN_URL.replace('.co/','.co/api/')+'/restart'#'https://huggingface.co/api/spaces/megaphuongdo/test/restart'
-    response=requests.post(url,headers=headers,cookies=cookies)
-    print(response,'Restarted' if response.status_code<400 else 'can\'t restart')
-    if response.status_code<400:
-        return True
-    stop=False
-    while not stop:
-        result=await is_running()
-        if result:
-            stop=True
-        await asyncio.sleep(1)
-    return False
+    for MAIN_URL in MAIN_URLS:
+        url=MAIN_URL
+        headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'}
+        cookies={'token':os.getenv('hf_token')}
+        response=requests.get(url,headers,cookies=cookies)
+        soup=BeautifulSoup(response.text,'html.parser')
+        csrf_token=soup.find('input',attrs={'name':'csrf'})['value']
+        url=MAIN_URL+'/start'
+        data={
+            'csrf':csrf_token
+        }
+        headers={
+            'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
+            'referer':MAIN_URL,
+            
+        }
+        response=requests.post(url,headers=headers,cookies=cookies,data=data)
+        print(response,'Started' if response.status_code<400 else 'can\'t start')
+        url=MAIN_URL.replace('.co/','.co/api/')+'/restart'#'https://huggingface.co/api/spaces/megaphuongdo/test/restart'
+        response=requests.post(url,headers=headers,cookies=cookies)
+        print(response,'Restarted' if response.status_code<400 else 'can\'t restart')
+        if response.status_code<400:
+            return True
+        stop=False
+        while not stop:
+            result=await is_running()
+            if result:
+                stop=True
+            await asyncio.sleep(1)
+        return False
 
 async def my_process1():
-    try:
-        while True:
-            running=await is_running()
-            if not running:
-                await restart_space()
-            else:
-                print('Running '+MAIN_URL)
-            await asyncio.sleep(1)
-    except Exception as error:
-        print(error)
+    for MAIN_URL in MAIN_URLS:
+        try:
+            while True:
+                running=await is_running()
+                if not running:
+                    await restart_space()
+                else:
+                    print('Running '+MAIN_URL)
+                await asyncio.sleep(1)
+        except Exception as error:
+            print(error)
 async def main():
     try:
         req=requests.get('http://localhost:888')
